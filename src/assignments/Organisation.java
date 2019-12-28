@@ -10,6 +10,7 @@ public class Organisation {
 	
 		Department HR= new Department("HR","Hyd");
 		Department Dev=new Department("Dev","chennai");
+		@SuppressWarnings("unused")
 		Department Test=new Department("Test","Mumbai");
 		
 		Address a1=new Address(31, "B", "hyd", "Telangana");
