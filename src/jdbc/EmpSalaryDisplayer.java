@@ -31,3 +31,4 @@ public static void displaySalary(int id)
 			e.printStackTrace();
 		}
 	}
+}
