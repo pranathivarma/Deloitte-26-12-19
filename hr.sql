@@ -1004,5 +1004,287 @@ BEGIN
 END;
 
 
+declare
+cursor cur_chief is select e.first_name, e.last_name, d.department_id,
+d.location_id from employees e join departments d on (e.department_id = d.department_id);
+type t_emp is record(
+first_name employees.first_name%type,
+last_name employees.last_name%type);
+
+type t_dept is record(
+dept_id departments.department_id%type,
+loc_id departments.location_id%type);
+
+type t_loc is record(
+dept t_dept, lname t_emp);
+r_loc t_loc;
+begin
+open cur_chief;
+loop
+fetch cur_chief into r_loc.lname.first_name, r_loc.lname.last_name, r_loc.dept.dept_id, r_loc.dept.loc_id;
+exit when cur_chief%NOTFOUND;
+dbms_output.put_line(r_loc.lname.first_name||' - '||r_loc.lname.last_name||' - '||r_loc.dept.loc_id||' - '||r_loc.dept.dept_id);
+end loop;
+end;
+
+
+SET serveroutput ON SIZE 1000000;
+DECLARE
+    l_name employees.LAST_NAME%TYPE;
+    l_emp_id employees.EMPLOYEE_ID%TYPE := &employee_id;
+BEGIN
+    -- get the customer
+    SELECT last_name INTO l_name
+    FROM employees
+    WHERE employee_id = l_emp_id;
+    
+    -- show the customer name   
+    dbms_output.put_line('employee name is ' || l_name);
+    EXCEPTION 
+        WHEN NO_DATA_FOUND THEN
+            dbms_output.put_line('employee ' || l_emp_id ||  ' does not exist');
+        WHEN TOO_MANY_ROWS THEN
+            dbms_output.put_line('The database returns more than one customer');     
+END;
+/
+
+SELECT * FROM employees;
+
+DECLARE
+    password_too_small EXCEPTION;
+    PRAGMA exception_init( password_too_small, -20001 );
+    l_password users.password%TYPE := '&password';
+BEGIN
+    -- check if input credit is greater than the max credit
+    IF length(l_password) < 8 THEN 
+        --RAISE password_too_small;
+        raise_application_error(-20001,'password too small');
+    END IF;
+    dbms_output.put_line(l_password);
+END;
+/
+
+DECLARE 
+     salary_beyond_limit EXCEPTION;
+     PRAGMA exception_init(salary_beyond_limit, -20001);
+     l_employeeid copyemps.employee_id%TYPE:=&employee_id;
+     l_salary copyemps.salary%TYPE := &salary;
+     l_min_salary jobs.min_salary%TYPE;
+     l_max_salary jobs.max_salary%TYPE;
+BEGIN
+     SELECT l_min_salary,l_max_salary from jobs where job_id=(select job_id from copyemps where employee_id = l_employeeid);
+     IF l_salary>l_max_salary OR l_salary<l_min_salary then
+           raise_application_error(-20001,'salary beyond limit');
+     END IF;
+           update copyemps
+           set salary = l_salary
+           where employee_id = l_employee_id;
+     
+END;
+/
+
+----------------------------------------------------------
+CREATE OR REPLACE 
+PROCEDURE HELLO IS
+BEGIN
+   DBMS_OUTPUT.PUT_LINE('Hello World');
+END;   
+/
+
+call Hello();
+------------------------------------------------------------------
+CREATE OR REPLACE 
+PROCEDURE DISPN (N INT) IS
+BEGIN
+   DBMS_OUTPUT.PUT_LINE('the square of '||N||' is ' || N*N);
+END; 
+/
+
+CALL DISPN(123456789);
+
+DECLARE 
+num NUMBER := &number;
+BEGIN
+   DISPN(num);
+END;
+/
+--------------------------------------------
+CREATE OR REPLACE 
+PROCEDURE DISP_EMP (emp_id INT) IS
+    l_empid employees.employee_id%TYPE;
+    l_lname employees.last_name%TYPE;
+    l_salary employees.salary%TYPE;
+BEGIN
+     SELECT employee_id,last_name,salary 
+     INTO l_empid,l_lname,l_salary
+     FROM employees;
+     DBMS_OUTPUT.PUT_LINE('the details of the employee'||l_empid||'are , name: '||l_lname||' salary: '||l_salary);
+END;
+/
+-----------------------------------------------------
+CREATE OR REPLACE
+PROCEDURE SUM_AB( A INT, B INT, C OUT INT) IS
+BEGIN
+  C := A + B;
+END;
+/
+
+DECLARE 
+   R INT;
+BEGIN
+   SUM_AB(23,29,R);
+   DBMS_OUTPUT.PUT_LINE('sum is: '||R);
+END;
+/
+---------------------------------
+SET SERVEROUTPUT ON
+CREATE OR REPLACE
+PROCEDURE DISPEMPNAME(EMPID INT)IS
+        L_EMPID EMPLOYEES.EMPLOYEE_ID%TYPE;
+        L_FNAME EMPLOYEES.FIRST_NAME%TYPE;
+        L_LNAME EMPLOYEES.LAST_NAME%TYPE;
+        
+BEGIN
+    SELECT FIRST_NAME,LAST_NAME
+    INTO L_FNAME,L_LNAME
+    FROM EMPLOYEES
+    WHERE EMPLOYEE_ID=EMPID;
+    DBMS_OUTPUT.PUT_LINE(L_FNAME||' '||L_LNAME);
+END;
+/
+
+DECLARE
+    L_EMPLOYEEID EMPLOYEES.EMPLOYEE_ID%TYPE:=&EMPID;
+BEGIN
+    DISPEMPNAME(L_EMPLOYEEID);
+END;
+/
+
+-------------------------
+
+CREATE OR REPLACE
+PROCEDURE DISPSALARY(EMPID INT)IS
+        L_EMPID EMPLOYEES.EMPLOYEE_ID%TYPE;
+        SALARY EMPLOYEES.SALARY%TYPE;
+        
+        
+BEGIN
+    SELECT SALARY
+    INTO SALARY
+    FROM EMPLOYEES
+    WHERE EMPLOYEE_ID=EMPID;
+    DBMS_OUTPUT.PUT_LINE(SALARY);
+END;
+/
+
+DECLARE
+    L_EMPLOYEEID EMPLOYEES.EMPLOYEE_ID%TYPE:=&EMPID;
+BEGIN
+    DISPSALARY(L_EMPLOYEEID);
+END;
+/
+
+
+CREATE OR REPLACE
+PROCEDURE DISPempsalary( l_employeeid employees.employee_id%TYPE,l_salary OUT employees.salary%TYPE) IS 
+
+BEGIN
+    SELECT salary
+    INTO l_salary
+    FROM EMPLOYEES
+    WHERE employee_id=l_employeeid;
+    
+END;
+/
+------------------------------------------
+SET SERVEROUTPUT ON SIZE 1000000;
+DECLARE
+    R employees.salary%TYPE;
+    l_employeeid employees.employee_id%TYPE :=&empid;
+BEGIN
+    DISPempsalary(l_employeeid,R);
+     DBMS_OUTPUT.PUT_LINE(R);
+END;
+/
+----------------------------------------------------
+
+CREATE TABLE audits (
+      audit_id         NUMBER PRIMARY KEY,
+      table_name       VARCHAR2(255),
+      transaction_name VARCHAR2(10),
+      by_user          VARCHAR2(30),
+      transaction_date DATE
+);
+
+CREATE OR REPLACE TRIGGER user_audit_trg
+    AFTER 
+    UPDATE OR DELETE 
+    ON USERS
+    FOR EACH ROW    
+DECLARE
+   l_transaction VARCHAR2(10);
+BEGIN
+   -- determine the transaction type
+   l_transaction := CASE  
+         WHEN UPDATING THEN 'UPDATE'
+         WHEN DELETING THEN 'DELETE'
+   END;
+ 
+   -- insert a row into the audit table   
+   INSERT INTO audits (audit_id, table_name, transaction_name, by_user, transaction_date)
+   VALUES(users_id_seq.nextval,'USERS', l_transaction, USER, SYSDATE);
+END;
+/
+
+SELECT * FROM USERS;
+-----------------------------------------------
+
+CREATE OR REPLACE PACKAGE personnel AS
+  -- get employee's fullname
+  FUNCTION get_fullname(n_emp_id NUMBER)
+    RETURN VARCHAR2;
+  -- get employee's salary
+  FUNCTION get_salary(n_emp_id NUMBER)
+    RETURN NUMBER;
+END personnel;
+
+
+CREATE OR REPLACE PACKAGE BODY personnel AS
+  -- get employee's fullname
+  FUNCTION get_fullname(n_emp_id NUMBER) RETURN VARCHAR2 IS
+      v_fullname VARCHAR2(46);
+  BEGIN
+    SELECT first_name || ',' ||  last_name
+    INTO v_fullname
+    FROM employees
+    WHERE employee_id = n_emp_id;
+ 
+    RETURN v_fullname;
+ 
+  EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    RETURN NULL;
+  WHEN TOO_MANY_ROWS THEN
+    RETURN NULL;
+  END; -- end get_fullname
+ 
+  -- get salary
+  FUNCTION get_salary(n_emp_id NUMBER) RETURN NUMBER IS
+    n_salary NUMBER(8,2);
+  BEGIN
+    SELECT salary
+    INTO n_salary
+    FROM employees
+    WHERE employee_id = n_emp_id;
+ 
+    RETURN n_salary;
+ 
+    EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        RETURN NULL;
+      WHEN TOO_MANY_ROWS THEN
+        RETURN NULL;
+  END;
+END personnel;
 
 
