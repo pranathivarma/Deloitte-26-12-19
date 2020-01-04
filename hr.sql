@@ -1287,4 +1287,32 @@ CREATE OR REPLACE PACKAGE BODY personnel AS
   END;
 END personnel;
 
+commit;
 
+drop table publisher;
+
+select * FROM BOOK;
+
+insert into book(isbn,title,pages,pub_year,type,author_name,publisher_name)
+values(963,'fiction',50,1999,'short story','Sudha Ramanan','Himanshu');
+
+insert into book(isbn,title,pages,pub_year,type,author_name,publisher_name)
+values(453,'poems',50,1945,'poems','R K Narayan','Himanshu');
+
+insert into book(isbn,title,pages,pub_year,type,author_name,publisher_name)
+values(983,'RomCom',50,1975,'novel','R K Narayan','R D Sharma');
+
+insert into book(isbn,title,pages,pub_year,type,author_name,publisher_name)
+values(584,'Sci-Fi',50,2009,'novel','Sudha Ramanan','R D Sharma');
+
+INSERT INTO author(name,nationality)
+values ('Sudha Ramanan','Indian');
+
+INSERT INTO author(name,nationality)
+values ('R K Narayan','Indian');
+
+INSERT INTO publisher(p_name,city)
+values ('Himanshu','Secunderabad');
+
+INSERT INTO publisher(p_name,city)
+values ('R D Sharma','Hyderabad');
